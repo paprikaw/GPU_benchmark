@@ -4,6 +4,7 @@
 #include <cuda_runtime.h>
 
 int main(){
+    printf("start testing");
     // 1. 选择设备
     cudaError_t err = cudaSetDevice(0);
     assert(err == cudaSuccess);

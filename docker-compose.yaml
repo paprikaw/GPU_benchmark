@@ -1,0 +1,92 @@
+# version: "3.9"
+# services:
+#   mps-client-1:
+#     image: mps-client:latest             # 含 CUDA Demo Suite
+#     container_name: mps-client-1
+#     devices:
+#       - "nvidia.com/gpu=all"
+#     environment:
+#       - CUDA_MPS_PIPE_DIRECTORY=/tmp/nvidia-mps # 与控制端一致的管道目录 :contentReference[oaicite:5]{index=5}
+#       - CUDA_MPS_ACTIVE_THREAD_PERCENTAGE=70
+#       - CUDA_VISIBLE_DEVICES=0
+#       - CUDA_MPS_PINNED_DEVICE_MEM_LIMIT=0=10GB
+#     volumes:
+#       - /tmp/nvidia-mps:/tmp/nvidia-mps         # 挂载同一路径以访问控制 socket
+#       - /dev/shm:/dev/shm
+#       - /home/student.unimelb.edu.au/bxb1/GPU_benchmark:/workspace/GPU_benchmark 
+#     entrypoint: 
+#       - "sh"
+#       - "-c"
+#       - |
+#         echo "=== Testing MPS connectivity ==="
+#         nvcc -g -G /workspace/GPU_benchmark/GPU_timer.cu -o /workspace/GPU_benchmark/timer-1
+#         ls -la /dev/shm
+#         /workspace/GPU_benchmark/timer-1
+#         echo "=== Testing MPS connectivity completed ==="
+
+#   mps-client-2:
+#     image: mps-client:latest             # 含 CUDA Demo Suite
+#     container_name: mps-client-2
+#     devices:
+#       - "nvidia.com/gpu=all"
+#     environment:
+#       - CUDA_MPS_PIPE_DIRECTORY=/tmp/nvidia-mps # 与控制端一致的管道目录 :contentReference[oaicite:5]{index=5}
+#       - CUDA_MPS_ACTIVE_THREAD_PERCENTAGE=70
+#       - CUDA_VISIBLE_DEVICES=0
+#       - CUDA_MPS_PINNED_DEVICE_MEM_LIMIT=0=10GB
+#     volumes:
+#       - /tmp/nvidia-mps:/tmp/nvidia-mps         # 挂载同一路径以访问控制 socket
+#       - /dev/shm:/dev/shm
+#       - /home/student.unimelb.edu.au/bxb1/GPU_benchmark:/workspace/GPU_benchmark 
+#     entrypoint: 
+#       - "sh"
+#       - "-c"
+#       - |
+#         echo "=== Testing MPS connectivity ==="
+#         nvcc -g -G /workspace/GPU_benchmark/GPU_timer.cu -o /workspace/GPU_benchmark/timer-2
+#         ls -la /dev/shm
+#         /workspace/GPU_benchmark/timer-2
+#         echo "=== Testing MPS connectivity completed ==="
+
+
+version: "3.9"
+
+env_file:
+  - .env
+
+services:
+  mps-client-1:
+    image: "${IMAGE_NAME}"
+    container_name: mps-client-1
+    devices:
+      - "nvidia.com/gpu=all"
+    env_file:
+      - .env
+    environment:
+      - CLIENT_ID=1
+      - CUDA_MPS_ACTIVE_THREAD_PERCENTAGE=70
+      - CUDA_MPS_PINNED_DEVICE_MEMORY_LIMIT=0=10GB
+    entrypoint: ["/workspace/entrypoint.sh"]
+    volumes:
+      - "${WORKSPACE_PATH}:/workspace"
+      - "./entrypoint.sh:/workspace/entrypoint.sh:ro"
+      - "${MPS_PIPE}:${MPS_PIPE}"
+      - "/dev/shm:/dev/shm"
+
+  mps-client-2:
+    image: "${IMAGE_NAME}"
+    container_name: mps-client-2
+    devices:
+      - "nvidia.com/gpu=all"
+    env_file:
+      - .env
+    environment:
+      - CLIENT_ID=2
+      - CUDA_MPS_ACTIVE_THREAD_PERCENTAGE=70
+      - CUDA_MPS_PINNED_DEVICE_MEMORY_LIMIT=0=10GB
+    entrypoint: ["/workspace/entrypoint.sh"]
+    volumes:
+      - "${WORKSPACE_PATH}:/workspace"
+      - "./entrypoint.sh:/workspace/entrypoint.sh:ro"
+      - "${MPS_PIPE}:${MPS_PIPE}"
+      - "/dev/shm:/dev/shm"
